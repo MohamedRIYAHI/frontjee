@@ -12,7 +12,6 @@ import { OnInit } from '@angular/core';
 })
 export class App implements OnInit {
   title = signal('frontjee');
-  
   constructor(private health: Health) {
 }
 ngOnInit() {

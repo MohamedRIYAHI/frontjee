@@ -1,0 +1,241 @@
+<div class="profile-container">
+  <div class="profile-card">
+    <div class="profile-header">
+      <h1>Complétez votre profil</h1>
+      <p>Ces informations nous aideront à personnaliser votre expérience</p>
+    </div>
+
+    @if (errorMessage()) {
+      <div class="error-alert">
+        <span class="error-icon">⚠️</span>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+
+    @if (successMessage()) {
+      <div class="success-alert">
+        <span class="success-icon">✓</span>
+        <span>{{ successMessage() }}</span>
+      </div>
+    }
+
+    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="profile-form">
+      <!-- Informations personnelles -->
+      <div class="form-section">
+        <h2 class="section-title">Informations personnelles</h2>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">Prénom <span class="required">*</span></label>
+            <input
+              id="firstName"
+              type="text"
+              formControlName="firstName"
+              placeholder="Votre prénom"
+              [class.error]="profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched"
+            />
+            @if (profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched) {
+              <span class="error-message">{{ getFieldError('firstName') }}</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="lastName">Nom <span class="required">*</span></label>
+            <input
+              id="lastName"
+              type="text"
+              formControlName="lastName"
+              placeholder="Votre nom"
+              [class.error]="profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched"
+            />
+            @if (profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched) {
+              <span class="error-message">{{ getFieldError('lastName') }}</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="age">Âge <span class="required">*</span></label>
+            <input
+              id="age"
+              type="number"
+              formControlName="age"
+              placeholder="25"
+              min="1"
+              max="150"
+              [class.error]="profileForm.get('age')?.invalid && profileForm.get('age')?.touched"
+            />
+            @if (profileForm.get('age')?.invalid && profileForm.get('age')?.touched) {
+              <span class="error-message">{{ getFieldError('age') }}</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="gender">Genre <span class="required">*</span></label>
+            <select
+              id="gender"
+              formControlName="gender"
+              [class.error]="profileForm.get('gender')?.invalid && profileForm.get('gender')?.touched"
+            >
+              <option value="">Sélectionnez votre genre</option>
+              @for (option of genderOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+            @if (profileForm.get('gender')?.invalid && profileForm.get('gender')?.touched) {
+              <span class="error-message">{{ getFieldError('gender') }}</span>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Informations physiques -->
+      <div class="form-section">
+        <h2 class="section-title">Informations physiques</h2>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="height">Taille (cm) <span class="required">*</span></label>
+            <input
+              id="height"
+              type="number"
+              formControlName="height"
+              placeholder="180"
+              min="50"
+              max="300"
+              step="0.1"
+              [class.error]="profileForm.get('height')?.invalid && profileForm.get('height')?.touched"
+            />
+            @if (profileForm.get('height')?.invalid && profileForm.get('height')?.touched) {
+              <span class="error-message">{{ getFieldError('height') }}</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="weight">Poids (kg) <span class="required">*</span></label>
+            <input
+              id="weight"
+              type="number"
+              formControlName="weight"
+              placeholder="85.5"
+              min="20"
+              max="500"
+              step="0.1"
+              [class.error]="profileForm.get('weight')?.invalid && profileForm.get('weight')?.touched"
+            />
+            @if (profileForm.get('weight')?.invalid && profileForm.get('weight')?.touched) {
+              <span class="error-message">{{ getFieldError('weight') }}</span>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Niveau d'activité -->
+      <div class="form-section">
+        <h2 class="section-title">Niveau d'activité <span class="required">*</span></h2>
+        <div class="activity-cards">
+          @for (option of activityLevelOptions; track option.value) {
+            <button
+              type="button"
+              class="activity-card"
+              [class.selected]="profileForm.get('activityLevel')?.value === option.value"
+              (click)="profileForm.patchValue({ activityLevel: option.value })"
+            >
+              <h3>{{ option.label }}</h3>
+              <p>{{ option.description }}</p>
+            </button>
+          }
+        </div>
+        @if (profileForm.get('activityLevel')?.invalid && profileForm.get('activityLevel')?.touched) {
+          <span class="error-message">{{ getFieldError('activityLevel') }}</span>
+        }
+      </div>
+
+      <!-- Objectif -->
+      <div class="form-section">
+        <h2 class="section-title">Objectif <span class="required">*</span></h2>
+        <div class="goal-cards">
+          @for (option of goalOptions; track option.value) {
+            <button
+              type="button"
+              class="goal-card"
+              [class.selected]="profileForm.get('goal')?.value === option.value"
+              (click)="profileForm.patchValue({ goal: option.value })"
+            >
+              <div class="goal-icon">{{ option.icon }}</div>
+              <h3>{{ option.label }}</h3>
+            </button>
+          }
+        </div>
+        @if (profileForm.get('goal')?.invalid && profileForm.get('goal')?.touched) {
+          <span class="error-message">{{ getFieldError('goal') }}</span>
+        }
+      </div>
+
+      <!-- Localisation -->
+      <div class="form-section">
+        <h2 class="section-title">Localisation</h2>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="country">Pays <span class="required">*</span></label>
+            <input
+              id="country"
+              type="text"
+              formControlName="country"
+              placeholder="Maroc"
+              [class.error]="profileForm.get('country')?.invalid && profileForm.get('country')?.touched"
+            />
+            @if (profileForm.get('country')?.invalid && profileForm.get('country')?.touched) {
+              <span class="error-message">{{ getFieldError('country') }}</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="city">Ville <span class="required">*</span></label>
+            <input
+              id="city"
+              type="text"
+              formControlName="city"
+              placeholder="Casablanca"
+              [class.error]="profileForm.get('city')?.invalid && profileForm.get('city')?.touched"
+            />
+            @if (profileForm.get('city')?.invalid && profileForm.get('city')?.touched) {
+              <span class="error-message">{{ getFieldError('city') }}</span>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Avatar (optionnel) -->
+      <div class="form-section">
+        <h2 class="section-title">Photo de profil (optionnel)</h2>
+        <div class="form-group">
+          <label for="avatarUrl">URL de l'avatar</label>
+          <input
+            id="avatarUrl"
+            type="url"
+            formControlName="avatarUrl"
+            placeholder="http://example.com/avatar.jpg"
+          />
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="submit"
+          class="submit-button"
+          [disabled]="profileForm.invalid || isLoading()"
+        >
+          @if (isLoading()) {
+            <span class="spinner"></span>
+            <span>Enregistrement...</span>
+          } @else {
+            Enregistrer le profil
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

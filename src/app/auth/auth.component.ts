@@ -2,6 +2,8 @@ import { Component, signal, ChangeDetectionStrategy, ChangeDetectorRef } from '@
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { AuthService } from './auth.service';
+import { ProfileService } from '../profile/profile.service';
 
 type AuthMode = 'login' | 'register';
 type GoalType = 'lose' | 'gain';
@@ -21,11 +23,14 @@ export class AuthComponent {
   authMode = signal<AuthMode>('login');
   selectedGoal = signal<GoalType | null>(null);
   isLoading = signal(false);
+  errorMessage = signal<string | null>(null);
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private authService: AuthService,
+    private profileService: ProfileService
   ) {
     this.authForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -41,6 +46,7 @@ export class AuthComponent {
   toggleAuthMode(): void {
     const newMode = this.authMode() === 'login' ? 'register' : 'login';
     this.authMode.set(newMode);
+    this.errorMessage.set(null);
     
     const nameControl = this.authForm.get('name');
     if (newMode === 'register') {
@@ -55,13 +61,55 @@ export class AuthComponent {
   onAuthSubmit(): void {
     if (this.authForm.valid) {
       this.isLoading.set(true);
+      this.errorMessage.set(null);
       
-      // Simuler une authentification
-      setTimeout(() => {
-        this.isLoading.set(false);
-        this.currentStep.set('goal');
-        this.cdr.markForCheck();
-      }, 1000);
+      const formValue = this.authForm.value;
+      
+      if (this.authMode() === 'login') {
+        // Connexion
+        this.authService.login({
+          email: formValue.email,
+          password: formValue.password
+        }).subscribe({
+          next: () => {
+            this.isLoading.set(false);
+            // Vérifier si le profil existe déjà
+            this.checkProfileAndRedirect();
+            this.cdr.markForCheck();
+          },
+          error: (error) => {
+            this.isLoading.set(false);
+            this.errorMessage.set(
+              error?.error?.message || 
+              error?.message || 
+              'Erreur de connexion. Vérifiez vos identifiants.'
+            );
+            this.cdr.markForCheck();
+          }
+        });
+      } else {
+        // Inscription - toujours rediriger vers le profil
+        this.authService.register({
+          name: formValue.name,
+          email: formValue.email,
+          password: formValue.password
+        }).subscribe({
+          next: () => {
+            this.isLoading.set(false);
+            this.router.navigate(['/profile']);
+            this.cdr.markForCheck();
+          },
+          error: (error) => {
+            this.isLoading.set(false);
+            this.errorMessage.set(
+              error?.error?.message || 
+              error?.message || 
+              'Erreur d\'inscription. Veuillez réessayer.'
+            );
+            this.cdr.markForCheck();
+          }
+        });
+      }
     }
   }
 
@@ -89,6 +137,35 @@ export class AuthComponent {
     this.currentStep.set('auth');
     this.selectedGoal.set(null);
     this.goalForm.reset();
+  }
+
+  /**
+   * Vérifier si le profil existe et rediriger vers health-data si oui, sinon vers profile
+   */
+  private checkProfileAndRedirect(): void {
+    const userId = this.authService.getUserId();
+    if (!userId) {
+      // Si on ne peut pas extraire l'ID, rediriger vers le profil
+      this.router.navigate(['/profile']);
+      return;
+    }
+
+    this.profileService.getProfile(userId).subscribe({
+      next: () => {
+        // Le profil existe, rediriger vers health-data
+        this.router.navigate(['/health-data']);
+      },
+      error: (error) => {
+        // Si le profil n'existe pas (404), rediriger vers le formulaire de profil
+        if (error.status === 404) {
+          this.router.navigate(['/profile']);
+        } else {
+          // En cas d'autre erreur, rediriger quand même vers le profil
+          console.error('Erreur lors de la vérification du profil:', error);
+          this.router.navigate(['/profile']);
+        }
+      }
+    });
   }
 }
 

@@ -9,5 +9,13 @@ export const routes: Routes = [
   {
     path: 'auth',
     loadComponent: () => import('./auth/auth.component').then(m => m.AuthComponent)
+  },
+  {
+    path: 'profile',
+    loadComponent: () => import('./profile/profile.component').then(m => m.ProfileComponent)
+  },
+  {
+    path: 'health-data',
+    loadComponent: () => import('./health-data/health-data.component').then(m => m.HealthDataComponent)
   }
 ];

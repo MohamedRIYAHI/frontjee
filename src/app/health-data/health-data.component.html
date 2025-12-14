@@ -1,0 +1,290 @@
+<div class="health-data-container">
+  <div class="health-data-card">
+    <div class="health-data-header">
+      <h1>Enregistrez vos données de santé</h1>
+      <p>Saisissez vos informations quotidiennes pour suivre votre progression</p>
+    </div>
+
+    @if (errorMessage()) {
+      <div class="error-alert">
+        <span class="error-icon">⚠️</span>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+
+    @if (successMessage()) {
+      <div class="success-alert">
+        <span class="success-icon">✓</span>
+        <span>{{ successMessage() }}</span>
+      </div>
+    }
+
+    <form [formGroup]="healthDataForm" (ngSubmit)="onSubmit()" class="health-data-form">
+      <!-- Date -->
+      <div class="form-section">
+        <h2 class="section-title">Date</h2>
+        <div class="form-group">
+          <label for="date">Date <span class="required">*</span></label>
+          <input
+            id="date"
+            type="date"
+            formControlName="date"
+            [class.error]="healthDataForm.get('date')?.invalid && healthDataForm.get('date')?.touched"
+          />
+          @if (healthDataForm.get('date')?.invalid && healthDataForm.get('date')?.touched) {
+            <span class="error-message">{{ getFieldError('date') }}</span>
+          }
+        </div>
+      </div>
+
+      <!-- Poids -->
+      <div class="form-section">
+        <h2 class="section-title">Poids</h2>
+        <div class="form-group">
+          <label for="weight">Poids (kg) <span class="required">*</span></label>
+          <input
+            id="weight"
+            type="number"
+            formControlName="weight"
+            placeholder="75.5"
+            min="20"
+            max="500"
+            step="0.1"
+            [class.error]="healthDataForm.get('weight')?.invalid && healthDataForm.get('weight')?.touched"
+          />
+          @if (healthDataForm.get('weight')?.invalid && healthDataForm.get('weight')?.touched) {
+            <span class="error-message">{{ getFieldError('weight') }}</span>
+          }
+        </div>
+      </div>
+
+      <!-- Nutrition -->
+      <div class="form-section">
+        <h2 class="section-title">Nutrition</h2>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="caloriesConsumed">Calories consommées <span class="required">*</span></label>
+            <input
+              id="caloriesConsumed"
+              type="number"
+              formControlName="caloriesConsumed"
+              placeholder="2450"
+              min="0"
+              [class.error]="healthDataForm.get('caloriesConsumed')?.invalid && healthDataForm.get('caloriesConsumed')?.touched"
+            />
+            @if (healthDataForm.get('caloriesConsumed')?.invalid && healthDataForm.get('caloriesConsumed')?.touched) {
+              <span class="error-message">{{ getFieldError('caloriesConsumed') }}</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="proteins">Protéines (g) <span class="required">*</span></label>
+            <input
+              id="proteins"
+              type="number"
+              formControlName="proteins"
+              placeholder="160"
+              min="0"
+              [class.error]="healthDataForm.get('proteins')?.invalid && healthDataForm.get('proteins')?.touched"
+            />
+            @if (healthDataForm.get('proteins')?.invalid && healthDataForm.get('proteins')?.touched) {
+              <span class="error-message">{{ getFieldError('proteins') }}</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="carbs">Glucides (g) <span class="required">*</span></label>
+            <input
+              id="carbs"
+              type="number"
+              formControlName="carbs"
+              placeholder="250"
+              min="0"
+              [class.error]="healthDataForm.get('carbs')?.invalid && healthDataForm.get('carbs')?.touched"
+            />
+            @if (healthDataForm.get('carbs')?.invalid && healthDataForm.get('carbs')?.touched) {
+              <span class="error-message">{{ getFieldError('carbs') }}</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="fats">Lipides (g) <span class="required">*</span></label>
+            <input
+              id="fats"
+              type="number"
+              formControlName="fats"
+              placeholder="70"
+              min="0"
+              [class.error]="healthDataForm.get('fats')?.invalid && healthDataForm.get('fats')?.touched"
+            />
+            @if (healthDataForm.get('fats')?.invalid && healthDataForm.get('fats')?.touched) {
+              <span class="error-message">{{ getFieldError('fats') }}</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="dietType">Type de régime <span class="required">*</span></label>
+            <select
+              id="dietType"
+              formControlName="dietType"
+              [class.error]="healthDataForm.get('dietType')?.invalid && healthDataForm.get('dietType')?.touched"
+            >
+              <option value="">Sélectionnez un type de régime</option>
+              @for (option of dietTypeOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+            @if (healthDataForm.get('dietType')?.invalid && healthDataForm.get('dietType')?.touched) {
+              <span class="error-message">{{ getFieldError('dietType') }}</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="dailyMealsFrequency">Nombre de repas par jour <span class="required">*</span></label>
+            <input
+              id="dailyMealsFrequency"
+              type="number"
+              formControlName="dailyMealsFrequency"
+              placeholder="3"
+              min="1"
+              max="10"
+              [class.error]="healthDataForm.get('dailyMealsFrequency')?.invalid && healthDataForm.get('dailyMealsFrequency')?.touched"
+            />
+            @if (healthDataForm.get('dailyMealsFrequency')?.invalid && healthDataForm.get('dailyMealsFrequency')?.touched) {
+              <span class="error-message">{{ getFieldError('dailyMealsFrequency') }}</span>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Activité physique -->
+      <div class="form-section">
+        <h2 class="section-title">Activité physique</h2>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="caloriesBurned">Calories brûlées <span class="required">*</span></label>
+            <input
+              id="caloriesBurned"
+              type="number"
+              formControlName="caloriesBurned"
+              placeholder="400"
+              min="0"
+              [class.error]="healthDataForm.get('caloriesBurned')?.invalid && healthDataForm.get('caloriesBurned')?.touched"
+            />
+            @if (healthDataForm.get('caloriesBurned')?.invalid && healthDataForm.get('caloriesBurned')?.touched) {
+              <span class="error-message">{{ getFieldError('caloriesBurned') }}</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="steps">Nombre de pas <span class="required">*</span></label>
+            <input
+              id="steps"
+              type="number"
+              formControlName="steps"
+              placeholder="8500"
+              min="0"
+              [class.error]="healthDataForm.get('steps')?.invalid && healthDataForm.get('steps')?.touched"
+            />
+            @if (healthDataForm.get('steps')?.invalid && healthDataForm.get('steps')?.touched) {
+              <span class="error-message">{{ getFieldError('steps') }}</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="waterLitres">Eau consommée (litres) <span class="required">*</span></label>
+            <input
+              id="waterLitres"
+              type="number"
+              formControlName="waterLitres"
+              placeholder="2.0"
+              min="0"
+              max="20"
+              step="0.1"
+              [class.error]="healthDataForm.get('waterLitres')?.invalid && healthDataForm.get('waterLitres')?.touched"
+            />
+            @if (healthDataForm.get('waterLitres')?.invalid && healthDataForm.get('waterLitres')?.touched) {
+              <span class="error-message">{{ getFieldError('waterLitres') }}</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="sessionDuration">Durée de la séance (heures) <span class="required">*</span></label>
+            <input
+              id="sessionDuration"
+              type="number"
+              formControlName="sessionDuration"
+              placeholder="1.5"
+              min="0"
+              max="24"
+              step="0.1"
+              [class.error]="healthDataForm.get('sessionDuration')?.invalid && healthDataForm.get('sessionDuration')?.touched"
+            />
+            @if (healthDataForm.get('sessionDuration')?.invalid && healthDataForm.get('sessionDuration')?.touched) {
+              <span class="error-message">{{ getFieldError('sessionDuration') }}</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="workoutType">Type d'entraînement <span class="required">*</span></label>
+            <select
+              id="workoutType"
+              formControlName="workoutType"
+              [class.error]="healthDataForm.get('workoutType')?.invalid && healthDataForm.get('workoutType')?.touched"
+            >
+              <option value="">Sélectionnez un type d'entraînement</option>
+              @for (option of workoutTypeOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+              }
+            </select>
+            @if (healthDataForm.get('workoutType')?.invalid && healthDataForm.get('workoutType')?.touched) {
+              <span class="error-message">{{ getFieldError('workoutType') }}</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="physicalExerciseLevel">Niveau d'intensité <span class="required">*</span></label>
+            <select
+              id="physicalExerciseLevel"
+              formControlName="physicalExerciseLevel"
+              [class.error]="healthDataForm.get('physicalExerciseLevel')?.invalid && healthDataForm.get('physicalExerciseLevel')?.touched"
+            >
+              <option value="">Sélectionnez un niveau</option>
+              @for (option of physicalExerciseLevelOptions; track option.value) {
+                <option [value]="option.value">{{ option.label }} - {{ option.description }}</option>
+              }
+            </select>
+            @if (healthDataForm.get('physicalExerciseLevel')?.invalid && healthDataForm.get('physicalExerciseLevel')?.touched) {
+              <span class="error-message">{{ getFieldError('physicalExerciseLevel') }}</span>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="submit"
+          class="submit-button"
+          [disabled]="healthDataForm.invalid || isLoading()"
+        >
+          @if (isLoading()) {
+            <span class="spinner"></span>
+            <span>Enregistrement...</span>
+          } @else {
+            Enregistrer les données
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

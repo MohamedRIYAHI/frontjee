@@ -74,6 +74,13 @@
               }
             </div>
 
+            @if (errorMessage()) {
+              <div class="error-alert">
+                <span class="error-icon">⚠️</span>
+                <span>{{ errorMessage() }}</span>
+              </div>
+            }
+
             <button
               type="submit"
               class="submit-button"
