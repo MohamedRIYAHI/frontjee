@@ -1,0 +1,163 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <!-- Étape d'authentification -->
+    @if (currentStep() === 'auth') {
+      <div class="auth-content">
+        <div class="logo-section">
+          <div class="logo-icon">💪</div>
+          <h1>Health Data</h1>
+          <p class="subtitle">Votre partenaire santé au quotidien</p>
+        </div>
+
+        <div class="form-wrapper">
+          <div class="auth-tabs">
+            <button
+              type="button"
+              [class.active]="authMode() === 'login'"
+              (click)="toggleAuthMode()"
+              aria-label="Mode connexion"
+            >
+              Connexion
+            </button>
+            <button
+              type="button"
+              [class.active]="authMode() === 'register'"
+              (click)="toggleAuthMode()"
+              aria-label="Mode inscription"
+            >
+              Inscription
+            </button>
+          </div>
+
+          <form [formGroup]="authForm" (ngSubmit)="onAuthSubmit()" class="auth-form">
+            @if (authMode() === 'register') {
+              <div class="form-group">
+                <label for="name">Nom complet</label>
+                <input
+                  id="name"
+                  type="text"
+                  formControlName="name"
+                  placeholder="Entrez votre nom"
+                  [class.error]="authForm.get('name')?.invalid && authForm.get('name')?.touched"
+                />
+                @if (authForm.get('name')?.invalid && authForm.get('name')?.touched) {
+                  <span class="error-message">Le nom est requis (min. 2 caractères)</span>
+                }
+              </div>
+            }
+
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input
+                id="email"
+                type="email"
+                formControlName="email"
+                placeholder="votre@email.com"
+                [class.error]="authForm.get('email')?.invalid && authForm.get('email')?.touched"
+              />
+              @if (authForm.get('email')?.invalid && authForm.get('email')?.touched) {
+                <span class="error-message">Veuillez entrer un email valide</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label for="password">Mot de passe</label>
+              <input
+                id="password"
+                type="password"
+                formControlName="password"
+                placeholder="••••••••"
+                [class.error]="authForm.get('password')?.invalid && authForm.get('password')?.touched"
+              />
+              @if (authForm.get('password')?.invalid && authForm.get('password')?.touched) {
+                <span class="error-message">Le mot de passe doit contenir au moins 6 caractères</span>
+              }
+            </div>
+
+            <button
+              type="submit"
+              class="submit-button"
+              [disabled]="authForm.invalid || isLoading()"
+            >
+              @if (isLoading()) {
+                <span class="spinner"></span>
+              } @else {
+                {{ authMode() === 'login' ? 'Se connecter' : "S'inscrire" }}
+              }
+            </button>
+          </form>
+        </div>
+      </div>
+    }
+
+    <!-- Étape de sélection d'objectif -->
+    @if (currentStep() === 'goal') {
+      <div class="goal-content">
+        <button type="button" class="back-button" (click)="goBack()" aria-label="Retour">
+          ← Retour
+        </button>
+
+        <div class="goal-header">
+          <h2>Quel est votre objectif ?</h2>
+          <p>Choisissez votre objectif principal pour personnaliser votre expérience</p>
+        </div>
+
+        <form [formGroup]="goalForm" (ngSubmit)="onGoalSubmit()" class="goal-form">
+          <div class="goal-cards">
+            <button
+              type="button"
+              class="goal-card"
+              [class.selected]="selectedGoal() === 'lose'"
+              (click)="selectGoal('lose')"
+            >
+              <div class="goal-icon">🔥</div>
+              <h3>Perdre du poids</h3>
+              <p>Atteignez votre poids idéal avec un suivi personnalisé</p>
+              <div class="goal-features">
+                <span>✓ Suivi des calories</span>
+                <span>✓ Exercices adaptés</span>
+                <span>✓ Nutrition équilibrée</span>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              class="goal-card"
+              [class.selected]="selectedGoal() === 'gain'"
+              (click)="selectGoal('gain')"
+            >
+              <div class="goal-icon">💪</div>
+              <h3>Gagner du poids</h3>
+              <p>Prise de masse saine et contrôlée</p>
+              <div class="goal-features">
+                <span>✓ Plan nutritionnel</span>
+                <span>✓ Entraînement musculaire</span>
+                <span>✓ Suivi de progression</span>
+              </div>
+            </button>
+          </div>
+
+          <button
+            type="submit"
+            class="submit-button"
+            [disabled]="!selectedGoal() || isLoading()"
+          >
+            @if (isLoading()) {
+              <span class="spinner"></span>
+            } @else {
+              Continuer
+            }
+          </button>
+        </form>
+      </div>
+    }
+  </div>
+
+  <!-- Décorations d'arrière-plan -->
+  <div class="background-decoration">
+    <div class="gradient-orb orb-1"></div>
+    <div class="gradient-orb orb-2"></div>
+    <div class="gradient-orb orb-3"></div>
+  </div>
+</div>
+
