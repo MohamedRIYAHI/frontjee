@@ -1,0 +1,13 @@
+# Configuration JWT
+jwt.secret=your-secret-key-change-in-production-min-256-bits-very-long-secret-key-for-security
+
+# Configuration CORS (optionnel, déjà configuré dans SecurityConfig)
+cors.allowed-origins=http://localhost:4200,http://localhost:4000
+
+# Port du serveur
+server.port=8084
+
+# Logging
+logging.level.com.recommendations=DEBUG
+logging.level.org.springframework.security=DEBUG
+
