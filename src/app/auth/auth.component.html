@@ -100,16 +100,16 @@
     <!-- Étape de sélection d'objectif -->
     @if (currentStep() === 'goal') {
       <div class="goal-content">
-        <button type="button" class="back-button" (click)="goBack()" aria-label="Retour">
-          ← Retour
-        </button>
-
         <div class="goal-header">
+          <button type="button" class="back-button" (click)="goBack()" aria-label="Retour">
+            ← Retour
+          </button>
           <h2>Quel est votre objectif ?</h2>
           <p>Choisissez votre objectif principal pour personnaliser votre expérience</p>
         </div>
 
-        <form [formGroup]="goalForm" (ngSubmit)="onGoalSubmit()" class="goal-form">
+        <div class="goal-form-wrapper">
+          <form [formGroup]="goalForm" (ngSubmit)="onGoalSubmit()" class="goal-form">
           <div class="goal-cards">
             <button
               type="button"
@@ -144,27 +144,23 @@
             </button>
           </div>
 
-          <button
-            type="submit"
-            class="submit-button"
-            [disabled]="!selectedGoal() || isLoading()"
-          >
-            @if (isLoading()) {
-              <span class="spinner"></span>
-            } @else {
-              Continuer
-            }
-          </button>
-        </form>
+          <div class="goal-form-actions">
+            <button
+              type="submit"
+              class="submit-button"
+              [disabled]="!selectedGoal() || isLoading()"
+            >
+              @if (isLoading()) {
+                <span class="spinner"></span>
+              } @else {
+                Continuer
+              }
+            </button>
+          </div>
+          </form>
+        </div>
       </div>
     }
-  </div>
-
-  <!-- Décorations d'arrière-plan -->
-  <div class="background-decoration">
-    <div class="gradient-orb orb-1"></div>
-    <div class="gradient-orb orb-2"></div>
-    <div class="gradient-orb orb-3"></div>
   </div>
 </div>
 

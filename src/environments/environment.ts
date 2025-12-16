@@ -4,6 +4,7 @@ export const environment = {
     auth: 'http://localhost:8081',
     profile: 'http://localhost:8082',
     healthData: 'http://localhost:8083',
-    health: 'http://localhost:8080'
+    health: 'http://localhost:8080',
+    recommendations: 'http://localhost:8084'
   }
 };

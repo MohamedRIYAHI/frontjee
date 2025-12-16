@@ -90,4 +90,20 @@ export class HealthDataService {
       })
     );
   }
+
+  /**
+   * Obtenir la prédiction des calories brûlées
+   */
+  getCaloriesBurnedPrediction(userId: number): Observable<any> {
+    const recommendationsApiUrl = 'http://localhost:8084';
+    return this.http.get<any>(
+      `${recommendationsApiUrl}/api/recommendations/${userId}`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      catchError(error => {
+        console.error('Erreur lors de la récupération de la prédiction:', error);
+        return throwError(() => error);
+      })
+    );
+  }
 }

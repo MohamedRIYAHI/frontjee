@@ -1,0 +1,89 @@
+<div class="layout-container">
+  <!-- Navbar -->
+  <nav class="navbar" role="navigation" aria-label="Navigation principale">
+    <div class="navbar-content">
+      <div class="navbar-left">
+        <button 
+          class="sidebar-toggle" 
+          type="button"
+          (click)="toggleSidebar()"
+          [attr.aria-label]="isSidebarOpen() ? 'Fermer le menu' : 'Ouvrir le menu'"
+          [attr.aria-expanded]="isSidebarOpen()">
+          <span class="hamburger-icon">
+            <span [class.active]="isSidebarOpen()"></span>
+            <span [class.active]="isSidebarOpen()"></span>
+            <span [class.active]="isSidebarOpen()"></span>
+          </span>
+        </button>
+        <h1 class="navbar-title">Health Tracker</h1>
+      </div>
+      
+      <div class="navbar-right">
+        <div class="navbar-nav">
+          @for (item of navItems; track item.path) {
+            @if (item.path !== '/auth' || !isAuthenticated()) {
+              <a 
+                [routerLink]="item.path" 
+                routerLinkActive="active"
+                [routerLinkActiveOptions]="{exact: item.path === '/home'}"
+                class="nav-link"
+                [attr.aria-current]="item.path === '/home' ? 'page' : null">
+                <span class="nav-icon">{{ item.icon }}</span>
+                <span class="nav-label">{{ item.label }}</span>
+              </a>
+            }
+          }
+        </div>
+        
+        @if (isAuthenticated()) {
+          <button 
+            class="logout-button" 
+            type="button"
+            (click)="logout()"
+            aria-label="Se déconnecter">
+            <span class="logout-icon">🚪</span>
+            <span class="logout-label">Déconnexion</span>
+          </button>
+        }
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Layout -->
+  <div class="main-layout">
+    <!-- Sidebar -->
+    <aside 
+      class="sidebar"
+      [class.collapsed]="!isSidebarOpen()"
+      role="complementary"
+      [attr.aria-hidden]="!isSidebarOpen()">
+      <nav class="sidebar-nav" aria-label="Navigation latérale">
+        <ul class="sidebar-menu">
+          @for (item of navItems; track item.path) {
+            @if (item.path !== '/auth' || !isAuthenticated()) {
+              <li class="sidebar-item">
+                <a 
+                  [routerLink]="item.path" 
+                  routerLinkActive="active"
+                  [routerLinkActiveOptions]="{exact: item.path === '/home'}"
+                  class="sidebar-link"
+                  [attr.aria-current]="item.path === '/home' ? 'page' : null">
+                  <span class="sidebar-icon">{{ item.icon }}</span>
+                  <span class="sidebar-label">{{ item.label }}</span>
+                </a>
+              </li>
+            }
+          }
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" role="main">
+      <div class="content-wrapper">
+        <router-outlet />
+      </div>
+    </main>
+  </div>
+</div>
+

@@ -168,7 +168,22 @@
         
         <div class="form-row">
           <div class="form-group">
-            <label for="caloriesBurned">Calories brûlées <span class="required">*</span></label>
+            <div class="form-group-header">
+              <label for="caloriesBurned">Calories brûlées <span class="required">*</span></label>
+              <button
+                type="button"
+                class="predict-button"
+                (click)="predictCaloriesBurned()"
+                [disabled]="isPredicting()"
+                aria-label="Prédire les calories brûlées">
+                @if (isPredicting()) {
+                  <span class="spinner-small"></span>
+                  <span>Prédiction...</span>
+                } @else {
+                  <span>🔮 Prédire</span>
+                }
+              </button>
+            </div>
             <input
               id="caloriesBurned"
               type="number"

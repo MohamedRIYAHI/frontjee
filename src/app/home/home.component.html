@@ -1,0 +1,107 @@
+<div class="home-container">
+  <!-- Navbar -->
+  <nav class="navbar" role="navigation" aria-label="Navigation principale">
+    <div class="navbar-content">
+      <div class="navbar-left">
+        <button 
+          class="sidebar-toggle" 
+          type="button"
+          (click)="toggleSidebar()"
+          [attr.aria-label]="isSidebarOpen() ? 'Fermer le menu' : 'Ouvrir le menu'"
+          [attr.aria-expanded]="isSidebarOpen()">
+          <span class="hamburger-icon">
+            <span [class.active]="isSidebarOpen()"></span>
+            <span [class.active]="isSidebarOpen()"></span>
+            <span [class.active]="isSidebarOpen()"></span>
+          </span>
+        </button>
+        <h1 class="navbar-title">Health Tracker</h1>
+      </div>
+      
+      <div class="navbar-nav">
+        @for (item of navItems; track item.path) {
+          <a 
+            [routerLink]="item.path" 
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{exact: item.path === '/home'}"
+            class="nav-link"
+            [attr.aria-current]="item.path === '/home' ? 'page' : null">
+            <span class="nav-icon">{{ item.icon }}</span>
+            <span class="nav-label">{{ item.label }}</span>
+          </a>
+        }
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Layout -->
+  <div class="main-layout">
+    <!-- Sidebar -->
+    <aside 
+      class="sidebar"
+      [class.collapsed]="!isSidebarOpen()"
+      role="complementary"
+      [attr.aria-hidden]="!isSidebarOpen()">
+      <nav class="sidebar-nav" aria-label="Navigation latérale">
+        <ul class="sidebar-menu">
+          @for (item of navItems; track item.path) {
+            <li class="sidebar-item">
+              <a 
+                [routerLink]="item.path" 
+                routerLinkActive="active"
+                [routerLinkActiveOptions]="{exact: item.path === '/home'}"
+                class="sidebar-link"
+                [attr.aria-current]="item.path === '/home' ? 'page' : null">
+                <span class="sidebar-icon">{{ item.icon }}</span>
+                <span class="sidebar-label">{{ item.label }}</span>
+              </a>
+            </li>
+          }
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" role="main">
+      <div class="content-wrapper">
+        <router-outlet />
+        
+        @if (isHomePage()) {
+          <div class="welcome-section">
+            <div class="welcome-card">
+              <h2 class="welcome-title">Bienvenue sur Health Tracker</h2>
+              <p class="welcome-description">
+                Gérez votre santé et votre bien-être en toute simplicité. 
+                Suivez vos données de santé, votre profil et vos objectifs.
+              </p>
+              
+              <div class="features-grid">
+                <div class="feature-card">
+                  <div class="feature-icon">🔐</div>
+                  <h3 class="feature-title">Authentification</h3>
+                  <p class="feature-description">Connectez-vous ou créez un compte pour commencer</p>
+                  <a routerLink="/auth" class="feature-link">Accéder →</a>
+                </div>
+                
+                <div class="feature-card">
+                  <div class="feature-icon">👤</div>
+                  <h3 class="feature-title">Profil</h3>
+                  <p class="feature-description">Gérez votre profil personnel et vos informations</p>
+                  <a routerLink="/profile" class="feature-link">Accéder →</a>
+                </div>
+                
+                <div class="feature-card">
+                  <div class="feature-icon">💊</div>
+                  <h3 class="feature-title">Données de santé</h3>
+                  <p class="feature-description">Suivez vos données de santé au quotidien</p>
+                  <a routerLink="/health-data" class="feature-link">Accéder →</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </main>
+  </div>
+</div>
+

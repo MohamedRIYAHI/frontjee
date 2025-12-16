@@ -90,17 +90,20 @@ export class ProfileComponent implements OnInit {
     this.profileService.getProfile(this.authUserId).subscribe({
       next: (profile) => {
         // Le profil existe déjà - rediriger vers health-data
+        // L'utilisateur ne devrait arriver ici que s'il n'a pas de profil
+        // Mais au cas où, on redirige pour éviter de dupliquer le profil
         this.profileExists.set(true);
         this.authUserId = profile.authUserId || this.authUserId;
-        // Rediriger vers health-data au lieu d'afficher le formulaire
+        console.log('Profil déjà existant, redirection vers health-data');
         this.router.navigate(['/health-data']);
         this.isLoading.set(false);
         this.cdr.markForCheck();
       },
       error: (error) => {
-        // Si le profil n'existe pas encore, ce n'est pas une erreur
+        // Si le profil n'existe pas encore (404), c'est normal - on affiche le formulaire vide
         if (error.status === 404) {
           this.profileExists.set(false);
+          console.log('Aucun profil trouvé, affichage du formulaire pour création');
         } else {
           console.error('Erreur lors du chargement du profil:', error);
         }

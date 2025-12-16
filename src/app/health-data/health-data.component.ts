@@ -17,6 +17,7 @@ import { finalize } from 'rxjs/operators';
 export class HealthDataComponent implements OnInit {
   healthDataForm: FormGroup;
   isLoading = signal(false);
+  isPredicting = signal(false);
   errorMessage = signal<string | null>(null);
   successMessage = signal<string | null>(null);
   private userId: number | null = null;
@@ -266,5 +267,84 @@ export class HealthDataComponent implements OnInit {
       return `La valeur maximale est ${field.errors?.['max'].max}`;
     }
     return '';
+  }
+
+  /**
+   * Prédire le nombre de calories brûlées
+   */
+  predictCaloriesBurned(): void {
+    if (!this.userId) {
+      this.errorMessage.set('ID utilisateur non disponible');
+      return;
+    }
+
+    this.isPredicting.set(true);
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+
+    this.healthDataService.getCaloriesBurnedPrediction(this.userId)
+      .pipe(
+        finalize(() => {
+          this.isPredicting.set(false);
+          this.cdr.markForCheck();
+        })
+      )
+      .subscribe({
+        next: (response) => {
+          // Gérer différentes structures de réponse possibles
+          let calories: number;
+          
+          if (typeof response === 'number') {
+            calories = response;
+          } else if (response?.caloriesBurned) {
+            calories = response.caloriesBurned;
+          } else if (response?.prediction) {
+            calories = response.prediction;
+          } else if (response?.value) {
+            calories = response.value;
+          } else {
+            // Essayer de convertir en nombre
+            calories = Number(response);
+            if (isNaN(calories)) {
+              throw new Error('Format de réponse inattendu');
+            }
+          }
+          
+          const roundedCalories = Math.round(calories);
+          
+          this.healthDataForm.patchValue({
+            caloriesBurned: roundedCalories
+          });
+          
+          this.successMessage.set(`Prédiction effectuée : ${roundedCalories} calories brûlées`);
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          let errorMsg = 'Erreur lors de la prédiction. Veuillez réessayer.';
+          
+          if (error.status === 0 || 
+              error.status === undefined ||
+              error.message?.includes('ERR_CONNECTION_REFUSED') ||
+              error.message?.includes('Failed to fetch') ||
+              error.message?.includes('NetworkError') ||
+              error.name === 'NetworkError' ||
+              error.name === 'TypeError') {
+            errorMsg = 'Impossible de se connecter au service de prédiction. Veuillez vérifier que le service recommendations est démarré sur le port 8084.';
+            console.error('Erreur de connexion réseau:', {
+              status: error.status,
+              message: error.message,
+              name: error.name,
+              error: error
+            });
+          } else if (error?.error?.message) {
+            errorMsg = error.error.message;
+          } else if (error?.message) {
+            errorMsg = error.message;
+          }
+          
+          this.errorMessage.set(errorMsg);
+          this.cdr.markForCheck();
+        }
+      });
   }
 }

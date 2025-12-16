@@ -88,7 +88,7 @@ export class AuthComponent {
           }
         });
       } else {
-        // Inscription - toujours rediriger vers le profil
+        // Inscription - vérifier si le profil existe déjà, sinon rediriger vers le profil
         this.authService.register({
           name: formValue.name,
           email: formValue.email,
@@ -96,7 +96,8 @@ export class AuthComponent {
         }).subscribe({
           next: () => {
             this.isLoading.set(false);
-            this.router.navigate(['/profile']);
+            // Vérifier si le profil existe déjà (peut arriver si l'utilisateur s'est déjà inscrit)
+            this.checkProfileAndRedirect();
             this.cdr.markForCheck();
           },
           error: (error) => {
@@ -140,27 +141,32 @@ export class AuthComponent {
   }
 
   /**
-   * Vérifier si le profil existe et rediriger vers health-data si oui, sinon vers profile
+   * Vérifier si le profil existe et rediriger :
+   * - Si le profil existe → rediriger vers health-data
+   * - Si le profil n'existe pas → rediriger vers profile pour le compléter
    */
   private checkProfileAndRedirect(): void {
     const userId = this.authService.getUserId();
     if (!userId) {
-      // Si on ne peut pas extraire l'ID, rediriger vers le profil
+      // Si on ne peut pas extraire l'ID depuis le token, rediriger vers le profil
+      console.warn('Impossible d\'extraire l\'ID utilisateur du token');
       this.router.navigate(['/profile']);
       return;
     }
 
     this.profileService.getProfile(userId).subscribe({
-      next: () => {
-        // Le profil existe, rediriger vers health-data
+      next: (profile) => {
+        // Le profil existe déjà, récupérer les données et rediriger vers health-data
+        console.log('Profil trouvé, redirection vers health-data');
         this.router.navigate(['/health-data']);
       },
       error: (error) => {
         // Si le profil n'existe pas (404), rediriger vers le formulaire de profil
         if (error.status === 404) {
+          console.log('Profil non trouvé, redirection vers profile pour compléter');
           this.router.navigate(['/profile']);
         } else {
-          // En cas d'autre erreur, rediriger quand même vers le profil
+          // En cas d'autre erreur (erreur réseau, serveur, etc.), rediriger vers le profil
           console.error('Erreur lors de la vérification du profil:', error);
           this.router.navigate(['/profile']);
         }
