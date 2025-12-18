@@ -122,12 +122,6 @@
   position: relative;
 }
 
-.form-group-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 4px;
-}
 
 .form-group label {
   font-size: 11px;
@@ -410,6 +404,9 @@
   padding: 48px 64px;
   border-top: 1px solid #f5f5f5;
   background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .submit-button {
@@ -453,6 +450,51 @@
 }
 
 .submit-button:focus-visible {
+  outline: 2px solid #000000;
+  outline-offset: 2px;
+}
+
+.predict-button-large {
+  width: 100%;
+  padding: 18px 48px;
+  background: #ffffff;
+  color: #000000;
+  border: 2px solid #000000;
+  border-radius: 0;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-family: inherit;
+}
+
+.predict-button-large:hover:not(:disabled) {
+  background: #000000;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.predict-button-large:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.predict-button-large:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: #ffffff;
+  color: #000000;
+}
+
+.predict-button-large:focus-visible {
   outline: 2px solid #000000;
   outline-offset: 2px;
 }

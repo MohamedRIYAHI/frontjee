@@ -1,0 +1,65 @@
+<div class="prediction-result-container">
+  <div class="prediction-result-card">
+    <div class="prediction-result-header">
+      <h1>Résultat de la prédiction</h1>
+      <p>Votre estimation de calories brûlées</p>
+    </div>
+
+    @if (isLoading()) {
+      <div class="loading-section">
+        <div class="spinner-large"></div>
+        <p>Calcul de la prédiction en cours...</p>
+      </div>
+    } @else if (errorMessage()) {
+      <div class="error-section">
+        <div class="error-alert">
+          <span class="error-icon">⚠️</span>
+          <span>{{ errorMessage() }}</span>
+        </div>
+        <div class="action-buttons">
+          <button type="button" class="secondary-button" (click)="goBack()">
+            Retour
+          </button>
+          <button type="button" class="primary-button" (click)="retryPrediction()">
+            Réessayer
+          </button>
+        </div>
+      </div>
+    } @else if (predictionResult() !== null) {
+      <div class="result-section">
+        <div class="result-card">
+          <div class="result-icon">🔥</div>
+          <div class="result-value">
+            <span class="result-number">{{ predictionResult() }}</span>
+            <span class="result-unit">calories</span>
+          </div>
+          <p class="result-description">Calories brûlées estimées</p>
+        </div>
+
+        <div class="info-section">
+          <h2 class="section-title">Informations</h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Prédiction basée sur</span>
+              <span class="info-value">Vos données historiques</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Date</span>
+              <span class="info-value">{{ getCurrentDate() }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="action-buttons">
+          <button type="button" class="secondary-button" (click)="goBack()">
+            Retour aux données
+          </button>
+          <button type="button" class="primary-button" (click)="retryPrediction()">
+            Nouvelle prédiction
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+

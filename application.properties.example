@@ -11,3 +11,4 @@ server.port=8084
 logging.level.com.recommendations=DEBUG
 logging.level.org.springframework.security=DEBUG
 
+

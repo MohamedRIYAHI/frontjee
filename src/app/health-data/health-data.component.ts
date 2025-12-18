@@ -21,6 +21,9 @@ export class HealthDataComponent implements OnInit {
   errorMessage = signal<string | null>(null);
   successMessage = signal<string | null>(null);
   private userId: number | null = null;
+  
+  // Valeur constante équilibrée pour les calories brûlées
+  private readonly DEFAULT_CALORIES_BURNED = 400;
 
   dietTypeOptions = [
     { value: 'Vegan', label: 'Vegan' },
@@ -64,7 +67,7 @@ export class HealthDataComponent implements OnInit {
       fats: ['', [Validators.required, Validators.min(0)]],
       dietType: ['', Validators.required],
       dailyMealsFrequency: ['', [Validators.required, Validators.min(1), Validators.max(10)]],
-      caloriesBurned: ['', [Validators.required, Validators.min(0)]],
+      caloriesBurned: [this.DEFAULT_CALORIES_BURNED, [Validators.min(0)]],
       steps: ['', [Validators.required, Validators.min(0)]],
       waterLitres: ['', [Validators.required, Validators.min(0), Validators.max(20)]],
       sessionDuration: ['', [Validators.required, Validators.min(0), Validators.max(24)]],
@@ -174,6 +177,149 @@ export class HealthDataComponent implements OnInit {
       return;
     }
 
+    // S'assurer que caloriesBurned a une valeur (utiliser la constante par défaut si vide)
+    const caloriesBurnedValue = this.healthDataForm.get('caloriesBurned')?.value;
+    if (!caloriesBurnedValue || caloriesBurnedValue === '') {
+      this.healthDataForm.patchValue({
+        caloriesBurned: this.DEFAULT_CALORIES_BURNED
+      });
+    }
+
+    if (this.healthDataForm.valid) {
+      this.saveHealthData();
+    } else {
+      // Marquer tous les champs comme touchés pour afficher les erreurs
+      Object.keys(this.healthDataForm.controls).forEach(key => {
+        this.healthDataForm.get(key)?.markAsTouched();
+      });
+    }
+  }
+
+  /**
+   * Prédire les calories brûlées puis sauvegarder les données
+   */
+  predictCaloriesBurnedAndSave(): void {
+    if (!this.userId) {
+      this.errorMessage.set('ID utilisateur non disponible');
+      return;
+    }
+
+    this.isPredicting.set(true);
+    this.errorMessage.set(null);
+    this.successMessage.set(null);
+
+    this.healthDataService.getCaloriesBurnedPrediction(this.userId)
+      .pipe(
+        finalize(() => {
+          this.isPredicting.set(false);
+          this.cdr.markForCheck();
+        })
+      )
+      .subscribe({
+        next: (response) => {
+          try {
+            // Gérer différentes structures de réponse possibles
+            let calories: number | null = null;
+            
+            if (typeof response === 'number') {
+              calories = response;
+            } else if (typeof response === 'string') {
+              const parsed = parseFloat(response);
+              if (!isNaN(parsed)) {
+                calories = parsed;
+              }
+            } else if (response && typeof response === 'object') {
+              if (response.caloriesBurned !== undefined && response.caloriesBurned !== null) {
+                calories = Number(response.caloriesBurned);
+              } else if (response.prediction !== undefined && response.prediction !== null) {
+                calories = Number(response.prediction);
+              } else if (response.value !== undefined && response.value !== null) {
+                calories = Number(response.value);
+              } else if (response.data !== undefined && response.data !== null) {
+                if (typeof response.data === 'number') {
+                  calories = response.data;
+                } else if (response.data.caloriesBurned !== undefined) {
+                  calories = Number(response.data.caloriesBurned);
+                } else if (response.data.prediction !== undefined) {
+                  calories = Number(response.data.prediction);
+                }
+              } else {
+                const values = Object.values(response);
+                for (const value of values) {
+                  if (typeof value === 'number' && !isNaN(value)) {
+                    calories = value;
+                    break;
+                  } else if (typeof value === 'string') {
+                    const parsed = parseFloat(value);
+                    if (!isNaN(parsed)) {
+                      calories = parsed;
+                      break;
+                    }
+                  }
+                }
+              }
+            }
+            
+            if (calories === null || isNaN(calories)) {
+              console.error('Format de réponse inattendu:', response);
+              this.errorMessage.set('Erreur lors de la prédiction. Veuillez réessayer.');
+              this.cdr.markForCheck();
+              return;
+            }
+            
+            const roundedCalories = Math.round(calories);
+            
+            // Remplir automatiquement le champ avec la prédiction
+            this.healthDataForm.patchValue({
+              caloriesBurned: roundedCalories
+            });
+            
+            // Maintenant sauvegarder les données
+            this.saveHealthData();
+          } catch (error) {
+            console.error('Erreur lors du traitement de la réponse:', error);
+            this.errorMessage.set('Erreur lors du traitement de la réponse: ' + (error instanceof Error ? error.message : 'Erreur inconnue'));
+            this.cdr.markForCheck();
+          }
+        },
+        error: (error) => {
+          let errorMsg = 'Erreur lors de la prédiction. Veuillez réessayer.';
+          
+          if (error.status === 0 || 
+              error.status === undefined ||
+              error.message?.includes('ERR_CONNECTION_REFUSED') ||
+              error.message?.includes('Failed to fetch') ||
+              error.message?.includes('NetworkError') ||
+              error.name === 'NetworkError' ||
+              error.name === 'TypeError') {
+            errorMsg = 'Impossible de se connecter au service de prédiction. Veuillez vérifier que le service recommendations est démarré sur le port 8084.';
+            console.error('Erreur de connexion réseau:', {
+              status: error.status,
+              message: error.message,
+              name: error.name,
+              error: error
+            });
+          } else if (error?.error?.message) {
+            errorMsg = error.error.message;
+          } else if (error?.message) {
+            errorMsg = error.message;
+          }
+          
+          this.errorMessage.set(errorMsg);
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  /**
+   * Sauvegarder les données de santé
+   */
+  private saveHealthData(): void {
+    if (!this.userId) {
+      this.errorMessage.set('ID utilisateur non disponible');
+      return;
+    }
+
     if (this.healthDataForm.valid) {
       this.isLoading.set(true);
       this.errorMessage.set(null);
@@ -189,7 +335,7 @@ export class HealthDataComponent implements OnInit {
         fats: Number(formValue.fats),
         dietType: formValue.dietType,
         dailyMealsFrequency: Number(formValue.dailyMealsFrequency),
-        caloriesBurned: Number(formValue.caloriesBurned),
+        caloriesBurned: Number(formValue.caloriesBurned) || 0,
         steps: Number(formValue.steps),
         waterLitres: Number(formValue.waterLitres),
         sessionDuration: Number(formValue.sessionDuration),
@@ -291,33 +437,78 @@ export class HealthDataComponent implements OnInit {
       )
       .subscribe({
         next: (response) => {
-          // Gérer différentes structures de réponse possibles
-          let calories: number;
-          
-          if (typeof response === 'number') {
-            calories = response;
-          } else if (response?.caloriesBurned) {
-            calories = response.caloriesBurned;
-          } else if (response?.prediction) {
-            calories = response.prediction;
-          } else if (response?.value) {
-            calories = response.value;
-          } else {
-            // Essayer de convertir en nombre
-            calories = Number(response);
-            if (isNaN(calories)) {
-              throw new Error('Format de réponse inattendu');
+          try {
+            // Log pour déboguer la structure de la réponse
+            console.log('Réponse de l\'API:', response);
+            console.log('Type de la réponse:', typeof response);
+            
+            // Gérer différentes structures de réponse possibles
+            let calories: number | null = null;
+            
+            if (typeof response === 'number') {
+              calories = response;
+            } else if (typeof response === 'string') {
+              // Si c'est une chaîne, essayer de la convertir en nombre
+              const parsed = parseFloat(response);
+              if (!isNaN(parsed)) {
+                calories = parsed;
+              }
+            } else if (response && typeof response === 'object') {
+              // Chercher dans différentes propriétés possibles
+              if (response.caloriesBurned !== undefined && response.caloriesBurned !== null) {
+                calories = Number(response.caloriesBurned);
+              } else if (response.prediction !== undefined && response.prediction !== null) {
+                calories = Number(response.prediction);
+              } else if (response.value !== undefined && response.value !== null) {
+                calories = Number(response.value);
+              } else if (response.data !== undefined && response.data !== null) {
+                // Si la réponse est dans une propriété data
+                if (typeof response.data === 'number') {
+                  calories = response.data;
+                } else if (response.data.caloriesBurned !== undefined) {
+                  calories = Number(response.data.caloriesBurned);
+                } else if (response.data.prediction !== undefined) {
+                  calories = Number(response.data.prediction);
+                }
+              } else {
+                // Essayer de trouver une valeur numérique dans l'objet
+                const values = Object.values(response);
+                for (const value of values) {
+                  if (typeof value === 'number' && !isNaN(value)) {
+                    calories = value;
+                    break;
+                  } else if (typeof value === 'string') {
+                    const parsed = parseFloat(value);
+                    if (!isNaN(parsed)) {
+                      calories = parsed;
+                      break;
+                    }
+                  }
+                }
+              }
             }
+            
+            // Vérifier si on a trouvé une valeur valide
+            if (calories === null || isNaN(calories)) {
+              console.error('Format de réponse inattendu:', response);
+              this.errorMessage.set('Format de réponse inattendu du service de prédiction. Réponse reçue: ' + JSON.stringify(response));
+              this.cdr.markForCheck();
+              return;
+            }
+            
+            const roundedCalories = Math.round(calories);
+            console.log('Calories calculées:', roundedCalories);
+            
+            // Ne pas remplir le champ, garder la valeur constante
+            // Naviguer vers le composant de résultats avec la prédiction
+            this.router.navigate(['/prediction-result'], {
+              queryParams: { prediction: roundedCalories }
+            });
+          } catch (error) {
+            console.error('Erreur lors du traitement de la réponse:', error);
+            this.errorMessage.set('Erreur lors du traitement de la réponse: ' + (error instanceof Error ? error.message : 'Erreur inconnue'));
+            this.cdr.markForCheck();
           }
-          
-          const roundedCalories = Math.round(calories);
-          
-          this.healthDataForm.patchValue({
-            caloriesBurned: roundedCalories
-          });
-          
-          this.successMessage.set(`Prédiction effectuée : ${roundedCalories} calories brûlées`);
-          this.cdr.markForCheck();
         },
         error: (error) => {
           let errorMsg = 'Erreur lors de la prédiction. Veuillez réessayer.';

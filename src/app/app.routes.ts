@@ -27,6 +27,10 @@ export const routes: Routes = [
       {
         path: 'health-data',
         loadComponent: () => import('./health-data/health-data.component').then(m => m.HealthDataComponent)
+      },
+      {
+        path: 'prediction-result',
+        loadComponent: () => import('./prediction-result/prediction-result.component').then(m => m.PredictionResultComponent)
       }
     ]
   }
